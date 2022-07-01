@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fort-Louis Test</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/vue@next"></script>
+
+
+    <!-- CSS Style -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+      #main{
+          height: 100vh;
+          font-family: 'Roboto', sans-serif;;
+      }
+      .anyButton{
+        transition: all .25s;        
+      }
+      .anyButton:hover{
+        transform: scale(110%);
+      }
+      .anyButton:focus{
+        outline: none;
+      }
+
+    </style>
+
+
+  </head>
+  <body>
+    <div class="bg-gray-200" id="main">
+      <header class="p-4 bg-white text-gray-700 font-bold tracking-widest">
+        <h1 class="text-4xl text-center">Contatos</h1>
+      </header>
+      <nav class="flex justify-center">
+        <span><button class="rounded-full anyButton"><img class="w-16" src="https://icon-library.com/images/icon-add/icon-add-0.jpg" alt=""></button></span>
+      </nav>
+
+      <div v-if='!modalOn' class="contactBox p-4 my-2 flex justify-between items-center " v-for="contato in contatos" :key='contato'>
+      
+        <div class="flex items-center gap-4">
+            <div><img class="w-12"
+            src="https://www.sunsetlearning.com/wp-content/uploads/2019/09/User-Icon-Grey-300x300.png" alt=""></div>
+      
+        <div>  <p class="text-2xl"> {{contato.nome}} </p>
+        <p class="text-lg text-gray-700"> {{contato.telefone}} </p></div>
+        </div>
+
+        <div>
+            <button class="anyButton roundedFull"><img class="w-8" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Edit_icon_%28the_Noun_Project_30184%29.svg/1024px-Edit_icon_%28the_Noun_Project_30184%29.svg.png" alt=""></button>
+        </div>
+
+
+ 
+    </div>
+
+    <!-- javascript -->
+    <script type="text/javascript">
+      const app = Vue.createApp({
+        data() {
+          return {
+            nome: "lples",
+            contatos: [
+              { nome: "Fulano de Tal", telefone: "(48) 9912-4854" },
+              { nome: "João Alves", telefone: "(47) 9922-5489" },
+              { nome: "Juca Pato", telefone: "(48) 9924-5267" },
+              { nome: "João Alves", telefone: "(47) 9912-9898" },
+            ],
+            modalOn: false
+          };
+        },
+      });
+      app.mount("#main");
+    </script>
+  </body>
+</html>
