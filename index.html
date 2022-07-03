@@ -13,11 +13,14 @@
 
     <!-- CSS Style -->
     <style>
+      
       @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+      
       #main {
         height: 100vh;
         font-family: "Roboto", sans-serif;
       }
+      
       .anyButton {
         transition: all 0.25s;
       }
@@ -27,26 +30,9 @@
       .anyButton:focus {
         outline: none;
       }
-      .mainSection-enter-from,
-      .mainSection-leave-to {
-        opacity: 0;
-        transform: translateY(50%);
-      }
-      .mainSection-enter-active,
-      .mainSection-leave-active {
-        transition: all 0.75s;
-      }
-
-      .modalBG-enter-from,
-      .modalBG-leave-to {
-        opacity: 0;
-      }
-      .modalBG-enter-active,
-      .modalBG-leave-active {
-        transition: all 0.75s;
-      }
-
+      
       .modalBackground {
+        
         background-color: black;
         z-index: 98;
         opacity: 0.3;
@@ -58,7 +44,7 @@
       }
       .modalWindow {
         position: absolute;
-        top: 10%;
+        top: 0%;
         left: 50%;
         width: 90%;
         z-index: 99;
@@ -67,25 +53,41 @@
         border-radius: 10px;
         box-shadow: 0px 2px 5px 1px black;
       }
+      .modalWindowDelete {
+        top: 20%;
+      }
       .errors {
         color: red;
         font-size: 0.8rem;
       }
+      
+      /* animations */
+      .mainSection-enter-from, .mainSection-leave-to { opacity: 0; transform: translateY(50%);}
+      .mainSection-enter-active, .mainSection-leave-active { transition: all 0.75s;}
+  
+      .modalBG-enter-from, .modalBG-leave-to { opacity: 0;}
+      .modalBG-enter-active, .modalBG-leave-active { transition: all 0.75s;}
     </style>
   </head>
 
   <body>
+    <!-- main div -->
     <div class="bg-gray-200" id="main">
+      
+      
+      <!-- header -->
       <header class="p-4 bg-white text-gray-700 font-bold tracking-widest">
         <h1 class="text-4xl text-center">Contatos</h1>
       </header>
 
+      
+      <!-- nav com o botão de adicionar contato -->
       <transition name="mainSection" mode="out-in" appear>
         <nav class="flex justify-center">
           <span
             ><button
               class="rounded-full anyButton"
-              @click="createClick"
+              @click="criarContatoClick"
               :disabled="modalOn"
             >
               <img
@@ -97,11 +99,15 @@
         </nav>
       </transition>
 
+      <!-- seção principal que irá renderizar o conteúdo -->
       <section class="mainSection">
+        
+
+        <!-- lista de contatos -->
         <transition name="mainSection" appear mode="out-in">
           <div>
             <div
-              class="contactBoxp-4 m-2 p-2 rounded-lg flex justify-between items-center"
+              class="p-4 m-2 p-2 rounded-lg flex justify-between items-center"
               :class="{'bg-blue-200' : verificaDDD(contato.telefone)}"
               v-for="contato in contatos"
               :key="contato"
@@ -123,7 +129,7 @@
 
               <div class="flex gap-2">
                 <button
-                  @click="editClick(contato)"
+                  @click="editarContatoClick(contato)"
                   class="anyButton roundedFull"
                 >
                   <img
@@ -133,7 +139,7 @@
                   />
                 </button>
                 <button
-                  @click="deleteClick(contato)"
+                  @click="removerContatoClick(contato)"
                   class="anyButton roundedFull"
                 >
                   <img
@@ -147,6 +153,8 @@
           </div>
         </transition>
 
+        
+        <!-- modal overlay -->
         <transition name="modalBG">
           <div v-if="modalOn">
             <div @click="hideModal" class="modalBackground"></div>
@@ -154,8 +162,11 @@
         </transition>
 
         <transition name="modalBG">
+          
+          
+          <!-- modal criação de contato -->
           <div
-            v-if="modalId == 'newContact'"
+            v-if="modalId == 'novoContato'"
             class="modalWindow bg-white p-4 flex flex-col gap-4"
           >
             <div>
@@ -175,7 +186,6 @@
                   <label
                     for="nome"
                     class="block text-xl text-gray-700 text-sm font-bold mb-2"
-                    for="username"
                   >
                     Nome:</label
                   >
@@ -186,7 +196,8 @@
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
                     id="nome"
                   />
-                  <p></p>
+                  <span class="h-8 my-1 text-red-500 text-center"><p v-show="errors.nomeError.status"> {{errors.nomeError.message}} </p></span>
+
                   <div class="flex flex-col">
                     <label
                       for="telefone"
@@ -196,7 +207,7 @@
                     >
                     <input
                     placeholder="xx xxxxx xxxx"
-                      @blur="checkPhone(contactInfo.telefone , contactInfo.telefone)"
+                      @blur="maskPhone(contactInfo.telefone)"
                       v-model="contactInfo.telefone"
                       required
                       type="text"
@@ -204,6 +215,7 @@
                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     />
                   </div>
+                  <span class="h-8 my-1 text-red-500 text-center"><p v-show="errors.telefoneError.status"> {{errors.telefoneError.message}} </p></span>
 
                   <div class="text-center">
                     <button
@@ -217,6 +229,8 @@
             </div>
           </div>
 
+          
+          <!-- modal edição de contato -->
           <div
             v-else-if="modalId == 'editContact'"
             class="modalWindow bg-white p-4 flex flex-col gap-4"
@@ -238,7 +252,6 @@
                   <label
                     for="nome"
                     class="block text-xl text-gray-700 text-sm font-bold mb-2"
-                    for="username"
                   >
                     Nome:</label
                   >
@@ -250,16 +263,17 @@
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     id="nome"
                   />
-                  <p></p>
+                  <span class="h-8 my-1 text-red-500 text-center"><p v-show="errors.nomeError.status"> {{errors.nomeError.message}} </p></span>
+
                   <div class="flex flex-col">
                     <label
                       for="telefone"
                       class="block text-xl text-gray-700 text-sm font-bold mb-2"
                     >
-                      Telefone:</label
+                      Telefone (com DDD):</label
                     >
                     <input
-                    @blur="contactInfo.telefone = 'asd'"
+                    @blur="maskPhone($refs.editTelefone.value)"
                     ref="editTelefone"
                       :value="contactInfo.telefone"
                       required
@@ -267,6 +281,7 @@
                       id="telefone"
                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     />
+                    <span class="h-8 my-1 text-red-500 text-center"><p v-show="errors.telefoneError.status"> {{errors.telefoneError.message}} </p></span>
                   </div>
 
                   <div class="text-center">
@@ -281,9 +296,11 @@
             </div>
           </div>
 
+          
+          <!-- modal exclusão de contato -->
           <div
             v-else-if="modalId == 'deleteContact'"
-            class="modalWindow bg-white p-4 flex flex-col gap-4"
+            class="modalWindow modalWindowDelete bg-white p-4 flex flex-col gap-4"
           >
             <div>
               <h1 class="text-2xl text-center text-gray-700">
@@ -309,34 +326,25 @@
         </transition>
       </section>
     </div>
+    
+    
+
     <!-- javascript -->
     <script>
       const app = Vue.createApp({
         data() {
           return {
             contatos: [
-              { nome: "Fulano de Tal", telefone: "(48) 9 9912-4854" , id: 1 },
-              { nome: "João Alves", telefone: "(47) 9 9922-5489" , id: 2 },
+              { nome: "Fulano Silva", telefone: "(48) 9 9912-4854" , id: 1 },
+              { nome: "Pedro Jorge", telefone: "(47) 9 9922-5489" , id: 2 },
               { nome: "Juca Pato", telefone: "(11) 9 9924-5267" , id: 3 },
               { nome: "João Alves", telefone: "(47) 9 9912-9898" , id: 4 },
             ],
             modalId: null,
             modalOn: false,
             contactInfo: { nome: "", telefone: "" },
-            teste: "",
+            errors: {nomeError : {message : 'Nome inválido. Insira pelo menos duas palavras com 3 caracteres cada' , status: false} , telefoneError : {message : 'formato inválido. Insira apenas os 11 dígitos do seu telefone' , status: false}}
           };
-        },
-        computed: {
-          // formattedNumber(){
-          //   let strWithoutSpaces = this.contactInfo.telefone.replace(/ /g,'')
-          //   if (strWithoutSpaces.match(/^[0-9]{11}$/)){
-              
-          //     let tempStr = this.contactInfo.telefone.replaceAll(' ', '')
-          //     return `(${tempStr.slice(0,2)}) ${tempStr.slice(2,3)} ${tempStr.slice(3,7)}-${tempStr.slice(7)}`
-
-          //   }
-          //     return this.contactInfo.telefone
-          // }
         },
         methods: {
           verificaDDD(telefone) {
@@ -350,21 +358,26 @@
             this.modalOn = true;
             this.modalId = string;
           },
-          createClick() {
-            this.buttonClick("newContact");
+          criarContatoClick() {
+            this.buttonClick("novoContato");
             this.contactInfo = { nome: "", telefone: "" };
           },
-          editClick(contato) {
+          editarContatoClick(contato) {
             this.buttonClick("editContact");
             this.contactInfo = contato;
           },
-          deleteClick(contato) {
+          removerContatoClick(contato) {
             this.buttonClick("deleteContact");
             this.contactInfo = contato;
+          },
+          resetErrors(){
+            this.errors.telefoneError.status = false
+            this.errors.nomeError.status = false
           },
           hideModal() {
             this.modalOn = false;
             this.modalId = null;
+            this.resetErrors()
           },
           removeContact() {
             this.hideModal();
@@ -372,35 +385,74 @@
             this.contatos = this.contatos.filter((el) => el != contactToRemove);
             this.contactInfo = { nome: "", telefone: "" };
           },
-          submitForm() {
-            let novoContato = this.contactInfo;
-            novoContato.id = Date.now() * Math.random()
-
-            this.contactInfo = null;
-            this.modalOn = false;
-            this.modalId = null;
-            this.contatos.push(novoContato);
-          },
-          checkPhone(){
-            let strWithoutSpaces = fone.replace(/ /g,'')
-            if (strWithoutSpaces.match(/^[0-9]{11}$/)){
-              target =  `(${strWithoutSpaces.slice(0,2)}) ${strWithoutSpaces.slice(2,3)} ${strWithoutSpaces.slice(3,7)}-${strWithoutSpaces.slice(7)}`
-
+          checkNome(nome){
+            let regex = /^[a-zA-Z]{3,} [a-zA-Z]{3,}( [a-zA-Z]+){0,}$/
+            
+            if (nome.trim().match(regex)){
+              return true
             }
-
+            this.errors.nomeError.status = true
+        
+            return false
           },
-          submitEditForm() {
-            if(checkPhone(this.$refs.editTelefone)){
+          checkPhone(fone){
+            let strWithoutSpaces = fone.replace(/ /g,'')
+            let regex1 = /^[0-9]{11}$/
+            let regex2 = /^\([0-9]{2}\)[9]{1}[0-9]{4}-[0-9]{4}$/
+            if (strWithoutSpaces.match(regex1) || strWithoutSpaces.match(regex2) !== null){
+              return true
+            } return false
+          },
+          maskPhone(fone){
+            let regex2 = /^\([0-9]{2}\) [9]{1} [0-9]{4}-[0-9]{4}$/
+            if (this.checkPhone(fone) && fone.match(regex2) == null){
+              let strWithoutSpaces = fone.replace(/ /g,'')
+              this.contactInfo.telefone = `(${strWithoutSpaces.slice(0,2)}) ${strWithoutSpaces.slice(2,3)} ${strWithoutSpaces.slice(3,7)}-${strWithoutSpaces.slice(7)}`
+            }
+          },
+          getErrors(isNameValid , isPhoneValid){
+            if (!isNameValid && !isPhoneValid){
+              this.errors.nomeError.status = true
+              this.errors.telefoneError.status = true
+            }
+            else if (isNameValid && !isPhoneValid){
+              this.errors.nomeError.status = false
+              this.errors.telefoneError.status = true
+            }
+            else if (!isNameValid && isPhoneValid){
+              this.errors.nomeError.status = true
+              this.errors.telefoneError.status = false
+            }
+          },
+          submitForm() {
+              let isPhoneValid = this.checkPhone(this.contactInfo.telefone)
+              let isNameValid = this.checkNome(this.contactInfo.nome)
+              if(isPhoneValid && isNameValid){
+  
+                let novoContato = this.contactInfo;
+                novoContato.id = Date.now() * Math.random()
+                this.contatos.push(novoContato);
+    
+                this.contactInfo = null;
+                this.hideModal()
+              } else{
+                this.getErrors(isNameValid , isPhoneValid)
+              }
+            },
+          submitEditForm() {            
+            let isPhoneValid = this.checkPhone(this.$refs.editTelefone.value)
+            let isNameValid = this.checkNome(this.$refs.editNome.value)
+            if(isPhoneValid && isNameValid){
 
-              let editedContact = {nome: this.$refs.editNome.value , telefone: this.$refs.editTelefone.value};
+              let editedContact = {nome: this.$refs.editNome.value , telefone: this.$refs.editTelefone.value , id: this.contactInfo.id};
               let index = this.contatos.indexOf(this.contactInfo)
-              console.log(this.contactInfo.id)
               this.contatos[index] = editedContact
   
               this.contactInfo = null;
-              this.modalOn = false;
-              this.modalId = null;
-            }
+              this.hideModal()
+            } else{
+                this.getErrors(isNameValid , isPhoneValid)
+              }
           },
         },
         mounted() {},
