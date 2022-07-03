@@ -11,70 +11,399 @@
     />
     <script src="https://unpkg.com/vue@next"></script>
 
-
     <!-- CSS Style -->
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
-      #main{
-          height: 100vh;
-          font-family: 'Roboto', sans-serif;;
+      @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+      #main {
+        height: 100vh;
+        font-family: "Roboto", sans-serif;
       }
-      .anyButton{
-        transition: all .25s;        
+      .anyButton {
+        transition: all 0.25s;
       }
-      .anyButton:hover{
+      .anyButton:hover {
         transform: scale(110%);
       }
-      .anyButton:focus{
+      .anyButton:focus {
         outline: none;
       }
+      .mainSection-enter-from,
+      .mainSection-leave-to {
+        opacity: 0;
+        transform: translateY(50%);
+      }
+      .mainSection-enter-active,
+      .mainSection-leave-active {
+        transition: all 0.75s;
+      }
 
+      .modalBG-enter-from,
+      .modalBG-leave-to {
+        opacity: 0;
+      }
+      .modalBG-enter-active,
+      .modalBG-leave-active {
+        transition: all 0.75s;
+      }
+
+      .modalBackground {
+        background-color: black;
+        z-index: 98;
+        opacity: 0.3;
+        top: 5.25rem;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        position: absolute;
+      }
+      .modalWindow {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        width: 90%;
+        z-index: 99;
+        transform: translate(-50%, 50%);
+        float: left;
+        border-radius: 10px;
+        box-shadow: 0px 2px 5px 1px black;
+      }
+      .errors {
+        color: red;
+        font-size: 0.8rem;
+      }
     </style>
-
-
   </head>
+
   <body>
     <div class="bg-gray-200" id="main">
       <header class="p-4 bg-white text-gray-700 font-bold tracking-widest">
         <h1 class="text-4xl text-center">Contatos</h1>
       </header>
-      <nav class="flex justify-center">
-        <span><button class="rounded-full anyButton"><img class="w-16" src="https://icon-library.com/images/icon-add/icon-add-0.jpg" alt=""></button></span>
-      </nav>
 
-      <div v-if='!modalOn' class="contactBox p-4 my-2 flex justify-between items-center " v-for="contato in contatos" :key='contato'>
-      
-        <div class="flex items-center gap-4">
-            <div><img class="w-12"
-            src="https://www.sunsetlearning.com/wp-content/uploads/2019/09/User-Icon-Grey-300x300.png" alt=""></div>
-      
-        <div>  <p class="text-2xl"> {{contato.nome}} </p>
-        <p class="text-lg text-gray-700"> {{contato.telefone}} </p></div>
-        </div>
+      <transition name="mainSection" mode="out-in" appear>
+        <nav class="flex justify-center">
+          <span
+            ><button
+              class="rounded-full anyButton"
+              @click="createClick"
+              :disabled="modalOn"
+            >
+              <img
+                class="w-16"
+                src="https://icon-library.com/images/icon-add/icon-add-0.jpg"
+                alt=""
+              /></button
+          ></span>
+        </nav>
+      </transition>
 
-        <div>
-            <button class="anyButton roundedFull"><img class="w-8" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Edit_icon_%28the_Noun_Project_30184%29.svg/1024px-Edit_icon_%28the_Noun_Project_30184%29.svg.png" alt=""></button>
-        </div>
+      <section class="mainSection">
+        <transition name="mainSection" appear mode="out-in">
+          <div>
+            <div
+              class="contactBoxp-4 m-2 p-2 rounded-lg flex justify-between items-center"
+              :class="{'bg-blue-200' : verificaDDD(contato.telefone)}"
+              v-for="contato in contatos"
+              :key="contato"
+            >
+              <div class="flex items-center gap-4">
+                <div>
+                  <img
+                    class="w-12"
+                    src="https://www.sunsetlearning.com/wp-content/uploads/2019/09/User-Icon-Grey-300x300.png"
+                    alt=""
+                  />
+                </div>
 
+                <div>
+                  <p class="text-2xl">{{contato.nome}}</p>
+                  <p class="text-lg text-gray-700">{{contato.telefone}}</p>
+                </div>
+              </div>
 
- 
+              <div class="flex gap-2">
+                <button
+                  @click="editClick(contato)"
+                  class="anyButton roundedFull"
+                >
+                  <img
+                    class="w-8 h-8"
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Edit_icon_%28the_Noun_Project_30184%29.svg/1024px-Edit_icon_%28the_Noun_Project_30184%29.svg.png"
+                    alt=""
+                  />
+                </button>
+                <button
+                  @click="deleteClick(contato)"
+                  class="anyButton roundedFull"
+                >
+                  <img
+                    class="w-8 h-8"
+                    src="https://p7.hiclipart.com/preview/178/524/917/computer-icons-black-and-white-trash-icon.jpg"
+                    alt=""
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <transition name="modalBG">
+          <div v-if="modalOn">
+            <div @click="hideModal" class="modalBackground"></div>
+          </div>
+        </transition>
+
+        <transition name="modalBG">
+          <div
+            v-if="modalId == 'newContact'"
+            class="modalWindow bg-white p-4 flex flex-col gap-4"
+          >
+            <div>
+              <h1 class="text-3xl text-center text-gray-700">Novo Contato</h1>
+            </div>
+            <div class="self-center">
+              <img
+                class="w-20"
+                src="https://www.sunsetlearning.com/wp-content/uploads/2019/09/User-Icon-Grey-300x300.png"
+                alt=""
+              />
+            </div>
+
+            <div>
+              <form @submit.prevent="submitForm">
+                <div class="flex flex-col gap-4">
+                  <label
+                    for="nome"
+                    class="block text-xl text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Nome:</label
+                  >
+                  <input
+                    v-model="contactInfo.nome"
+                    required
+                    type="text"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
+                    id="nome"
+                  />
+                  <p></p>
+                  <div class="flex flex-col">
+                    <label
+                      for="telefone"
+                      class="block text-xl text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Telefone (com DDD):</label
+                    >
+                    <input
+                    placeholder="xx xxxxx xxxx"
+                      @blur="checkPhone(contactInfo.telefone , contactInfo.telefone)"
+                      v-model="contactInfo.telefone"
+                      required
+                      type="text"
+                      id="telefone"
+                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                  </div>
+
+                  <div class="text-center">
+                    <button
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    >
+                      Criar
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div
+            v-else-if="modalId == 'editContact'"
+            class="modalWindow bg-white p-4 flex flex-col gap-4"
+          >
+            <div>
+              <h1 class="text-3xl text-center text-gray-700">Editar Contato</h1>
+            </div>
+            <div class="self-center">
+              <img
+                class="w-20"
+                src="https://www.sunsetlearning.com/wp-content/uploads/2019/09/User-Icon-Grey-300x300.png"
+                alt=""
+              />
+            </div>
+
+            <div>
+              <form @submit.prevent="submitEditForm">
+                <div class="flex flex-col gap-4">
+                  <label
+                    for="nome"
+                    class="block text-xl text-gray-700 text-sm font-bold mb-2"
+                    for="username"
+                  >
+                    Nome:</label
+                  >
+                  <input
+                  ref="editNome"  
+                  :value="contactInfo.nome"
+                    required
+                    type="text"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="nome"
+                  />
+                  <p></p>
+                  <div class="flex flex-col">
+                    <label
+                      for="telefone"
+                      class="block text-xl text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Telefone:</label
+                    >
+                    <input
+                    @blur="contactInfo.telefone = 'asd'"
+                    ref="editTelefone"
+                      :value="contactInfo.telefone"
+                      required
+                      type="text"
+                      id="telefone"
+                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                  </div>
+
+                  <div class="text-center">
+                    <button
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    >
+                      Editar
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div
+            v-else-if="modalId == 'deleteContact'"
+            class="modalWindow bg-white p-4 flex flex-col gap-4"
+          >
+            <div>
+              <h1 class="text-2xl text-center text-gray-700">
+                Deseja mesmo remover
+                <span class="text-black font-bold">{{contactInfo.nome}}</span>
+                dos seus contatos?
+              </h1>
+            </div>
+
+            <div>
+              <div class="flex flex-col gap-4">
+                <div class="text-center">
+                  <button
+                    @click="removeContact"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:outline-none"
+                  >
+                    Remover
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </section>
     </div>
-
     <!-- javascript -->
-    <script type="text/javascript">
+    <script>
       const app = Vue.createApp({
         data() {
           return {
-            nome: "lples",
             contatos: [
-              { nome: "Fulano de Tal", telefone: "(48) 9912-4854" },
-              { nome: "João Alves", telefone: "(47) 9922-5489" },
-              { nome: "Juca Pato", telefone: "(48) 9924-5267" },
-              { nome: "João Alves", telefone: "(47) 9912-9898" },
+              { nome: "Fulano de Tal", telefone: "(48) 9 9912-4854" , id: 1 },
+              { nome: "João Alves", telefone: "(47) 9 9922-5489" , id: 2 },
+              { nome: "Juca Pato", telefone: "(11) 9 9924-5267" , id: 3 },
+              { nome: "João Alves", telefone: "(47) 9 9912-9898" , id: 4 },
             ],
-            modalOn: false
+            modalId: null,
+            modalOn: false,
+            contactInfo: { nome: "", telefone: "" },
+            teste: "",
           };
         },
+        computed: {
+          // formattedNumber(){
+          //   let strWithoutSpaces = this.contactInfo.telefone.replace(/ /g,'')
+          //   if (strWithoutSpaces.match(/^[0-9]{11}$/)){
+              
+          //     let tempStr = this.contactInfo.telefone.replaceAll(' ', '')
+          //     return `(${tempStr.slice(0,2)}) ${tempStr.slice(2,3)} ${tempStr.slice(3,7)}-${tempStr.slice(7)}`
+
+          //   }
+          //     return this.contactInfo.telefone
+          // }
+        },
+        methods: {
+          verificaDDD(telefone) {
+            let ddd = telefone.slice(1, 3);
+            if (ddd === "11") {
+              return true;
+            }
+            return false;
+          },
+          buttonClick(string) {
+            this.modalOn = true;
+            this.modalId = string;
+          },
+          createClick() {
+            this.buttonClick("newContact");
+            this.contactInfo = { nome: "", telefone: "" };
+          },
+          editClick(contato) {
+            this.buttonClick("editContact");
+            this.contactInfo = contato;
+          },
+          deleteClick(contato) {
+            this.buttonClick("deleteContact");
+            this.contactInfo = contato;
+          },
+          hideModal() {
+            this.modalOn = false;
+            this.modalId = null;
+          },
+          removeContact() {
+            this.hideModal();
+            let contactToRemove = this.contactInfo;
+            this.contatos = this.contatos.filter((el) => el != contactToRemove);
+            this.contactInfo = { nome: "", telefone: "" };
+          },
+          submitForm() {
+            let novoContato = this.contactInfo;
+            novoContato.id = Date.now() * Math.random()
+
+            this.contactInfo = null;
+            this.modalOn = false;
+            this.modalId = null;
+            this.contatos.push(novoContato);
+          },
+          checkPhone(){
+            let strWithoutSpaces = fone.replace(/ /g,'')
+            if (strWithoutSpaces.match(/^[0-9]{11}$/)){
+              target =  `(${strWithoutSpaces.slice(0,2)}) ${strWithoutSpaces.slice(2,3)} ${strWithoutSpaces.slice(3,7)}-${strWithoutSpaces.slice(7)}`
+
+            }
+
+          },
+          submitEditForm() {
+            if(checkPhone(this.$refs.editTelefone)){
+
+              let editedContact = {nome: this.$refs.editNome.value , telefone: this.$refs.editTelefone.value};
+              let index = this.contatos.indexOf(this.contactInfo)
+              console.log(this.contactInfo.id)
+              this.contatos[index] = editedContact
+  
+              this.contactInfo = null;
+              this.modalOn = false;
+              this.modalId = null;
+            }
+          },
+        },
+        mounted() {},
       });
       app.mount("#main");
     </script>
